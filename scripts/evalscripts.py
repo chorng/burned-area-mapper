@@ -3,7 +3,7 @@ def burn_severity_visualisation(fire_start, fire_end):
         //VERSION=3
         function setup() {{
             return {{
-                input: [{{bands: ["B02", "B03", "B04", "B05", "B08", "B12", "SCL]}}],
+                input: [{{bands: ["B02", "B03", "B04", "B05", "B08", "B12", "SCL"]}}],
                 output: {{ bands: 3 }},
                 mosaicking: "ORBIT"
             }}
@@ -15,6 +15,7 @@ def burn_severity_visualisation(fire_start, fire_end):
             return nbrval;
         }}
 
+        // usgs dnbr general classification
         const severity_map = [
             [0.27, 0xfecc5c],
             [0.44, 0xfd8d3c],
@@ -32,7 +33,7 @@ def burn_severity_visualisation(fire_start, fire_end):
             const cloud_and_water = [3, 6, 7, 8, 9, 10];
             const is_cloud_or_water = (
                 cloud_and_water.includes(samples[0].SCL) ||
-                cloud_and_water.includes(samples[1].SCL);
+                cloud_and_water.includes(samples[1].SCL)
             );
 
             // set output display layers
@@ -43,8 +44,8 @@ def burn_severity_visualisation(fire_start, fire_end):
         }}
 
         function preProcessScenes (collections) {{
-            const fireStart = {fire_start};
-            const fireEnd = {fire_end};
+            const fireStart = "{fire_start}";
+            const fireEnd = "{fire_end}";
             const numScenes = collections.scenes.orbits.length;
             collections.scenes.orbits = collections.scenes.orbits.sort(function(a, b) {{
                 return new Date(a.dateFrom) - new Date(b.dateFrom);
