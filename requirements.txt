@@ -1,2 +1,6 @@
 #Libraries that your project use
+geopandas
+pandas
+rasterio
 sentinelhub
+shapely

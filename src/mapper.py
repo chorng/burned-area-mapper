@@ -11,8 +11,6 @@ from sentinelhub import (
     UtmZoneSplitter,
 )
 
-from .evalscripts import burn_severity_visualisation
-
 
 class BurnedAreaMapper:
     def __init__(
@@ -24,16 +22,17 @@ class BurnedAreaMapper:
         client_id,
         client_secret,
         result_dir,
-        day_delta=10,
+        delta_day=10,
         resolution=10,
         maxcc=0.3,
     ):
         self.bbox = BBox(bbox, crs=CRS(crs))
         self.time_interval = (
-            (date.fromisoformat(fire_start) - timedelta(days=day_delta)).strftime("%Y-%m-%d"),
-            (date.fromisoformat(fire_end) + timedelta(days=day_delta)).strftime("%Y-%m-%d"),
+            (date.fromisoformat(fire_start) - timedelta(days=delta_day)).strftime("%Y-%m-%d"),
+            (date.fromisoformat(fire_end) + timedelta(days=delta_day)).strftime("%Y-%m-%d"),
         )
-        self.evalscript = burn_severity_visualisation(fire_start, fire_end)
+        self.fire_start = fire_start
+        self.fire_end = fire_end
 
         def _configure(client_id, client_secret):
             config = SHConfig()
@@ -55,29 +54,16 @@ class BurnedAreaMapper:
         self.bbox_list = utm_zone_splitter.get_bbox_list()
         return self.bbox_list
 
-    def create_request_list(self):
-        def _build_burned_area_map_request(bbox, time_interval, resolution, maxcc, evalscript, result_dir, config):
-            return SentinelHubRequest(
-                data_folder=result_dir,
-                evalscript=evalscript,
-                input_data=[
-                    SentinelHubRequest.input_data(
-                        data_collection=DataCollection.SENTINEL2_L2A.define_from(
-                            "CDSE_S2L2A", service_url=config.sh_base_url
-                        ),
-                        time_interval=time_interval,
-                        maxcc=maxcc,
-                    )
-                ],
-                responses=[SentinelHubRequest.output_response("default", MimeType.TIFF)],
-                bbox=bbox,
-                resolution=tuple([resolution] * 2),
-                config=config,
-            )
-
+    def create_request_list(self, evalscript_func):
         self.request_list = [
-            _build_burned_area_map_request(
-                bbox, self.time_interval, self.resolution, self.maxcc, self.evalscript, self.result_dir, self.config
+            self.build_request(
+                bbox,
+                self.time_interval,
+                self.resolution,
+                self.maxcc,
+                evalscript_func(self.fire_start, self.fire_end),
+                self.result_dir,
+                self.config,
             )
             for bbox in self.bbox_list
         ]
@@ -87,4 +73,24 @@ class BurnedAreaMapper:
         download_requests = [request.download_list[0] for request in self.request_list]
         return SentinelHubDownloadClient(config=self.config).download(
             download_requests, max_threads=10, show_progress=True
+        )
+
+    @staticmethod
+    def build_request(bbox, time_interval, resolution, maxcc, evalscript, result_dir, config):
+        return SentinelHubRequest(
+            data_folder=result_dir,
+            evalscript=evalscript,
+            input_data=[
+                SentinelHubRequest.input_data(
+                    data_collection=DataCollection.SENTINEL2_L2A.define_from(
+                        "CDSE_S2L2A", service_url=config.sh_base_url
+                    ),
+                    time_interval=time_interval,
+                    maxcc=maxcc,
+                )
+            ],
+            responses=[SentinelHubRequest.output_response("default", MimeType.TIFF)],
+            bbox=bbox,
+            resolution=tuple([resolution] * 2),
+            config=config,
         )
