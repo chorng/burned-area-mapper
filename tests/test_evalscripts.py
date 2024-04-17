@@ -1,6 +1,6 @@
 import pytest
 
-from scripts.evalscripts import burn_severity_visualisation
+from src.evalscripts import burn_severity_visualisation
 
 
 @pytest.mark.parametrize("kwargs", [dict(fire_start="2023-03-05", fire_end="2023-03-19")])
