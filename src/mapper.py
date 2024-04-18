@@ -4,7 +4,6 @@ from sentinelhub import (
     CRS,
     BBox,
     DataCollection,
-    MimeType,
     SentinelHubDownloadClient,
     SentinelHubRequest,
     SHConfig,
@@ -54,7 +53,7 @@ class BurnedAreaMapper:
         self.bbox_list = utm_zone_splitter.get_bbox_list()
         return self.bbox_list
 
-    def create_request_list(self, evalscript_func):
+    def create_request_list(self, evalscript_func, output_format):
         self.request_list = [
             self.build_request(
                 bbox,
@@ -62,6 +61,7 @@ class BurnedAreaMapper:
                 self.resolution,
                 self.maxcc,
                 evalscript_func(self.fire_start, self.fire_end),
+                output_format,
                 self.result_dir,
                 self.config,
             )
@@ -76,7 +76,7 @@ class BurnedAreaMapper:
         )
 
     @staticmethod
-    def build_request(bbox, time_interval, resolution, maxcc, evalscript, result_dir, config):
+    def build_request(bbox, time_interval, resolution, maxcc, evalscript, img_format, result_dir, config):
         return SentinelHubRequest(
             data_folder=result_dir,
             evalscript=evalscript,
@@ -89,7 +89,7 @@ class BurnedAreaMapper:
                     maxcc=maxcc,
                 )
             ],
-            responses=[SentinelHubRequest.output_response("default", MimeType.TIFF)],
+            responses=[SentinelHubRequest.output_response("default", img_format)],
             bbox=bbox,
             resolution=tuple([resolution] * 2),
             config=config,

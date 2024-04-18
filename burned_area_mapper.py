@@ -1,6 +1,8 @@
 import argparse
 import warnings
 
+from sentinelhub import MimeType
+
 from src.evalscripts import burn_severity_visualisation, burned_area_mask
 from src.mapper import BurnedAreaMapper
 from src.vectorizer import create_gpkg
@@ -125,6 +127,11 @@ class Maps:
     mask = burned_area_mask
 
 
+class ImgFormats:
+    visualisation = MimeType.PNG
+    mask = MimeType.TIFF
+
+
 def main():
     args = parser.parse_args()
     burned_area_mapper = BurnedAreaMapper(
@@ -140,7 +147,7 @@ def main():
         args.maxcc,
     )
     burned_area_mapper.split_into_utm_zones(tuple([args.bbox_size] * 2))
-    burned_area_mapper.create_request_list(getattr(Maps, args.map))
+    burned_area_mapper.create_request_list(getattr(Maps, args.map), getattr(ImgFormats, args.map))
     burned_area_mapper.download_requests()
 
     if args.geopackage and args.map == "mask":

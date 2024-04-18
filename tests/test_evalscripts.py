@@ -10,8 +10,8 @@ def test_burn_severity_visualisation(kwargs) -> None:
         //VERSION=3
         function setup() {
             return {
-                input: [{bands: ["B02", "B03", "B04", "B08", "B12", "SCL"]}],
-                output: { bands: 3 },
+                input: [{bands: ["B02", "B03", "B04", "B08", "B12", "SCL", "dataMask"]}],
+                output: { bands: 4 },
                 mosaicking: "ORBIT"
             }
         }
@@ -47,7 +47,7 @@ def test_burn_severity_visualisation(kwargs) -> None:
             const natural_color = [2.5 * samples[0].B04, 2.5 * samples[0].B03, 2.5 * samples[0].B02];
             let img_vals = dnbr >= 0.27 ? severity_visualizer.process(dnbr) : natural_color
             img_vals = is_cloud_or_water ? natural_color : img_vals;
-            return img_vals
+            return img_vals.concat(samples[0].dataMask)
         }
 
         function preProcessScenes (collections) {
