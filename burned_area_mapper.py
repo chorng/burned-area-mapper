@@ -1,9 +1,6 @@
 import argparse
 import warnings
 
-from sentinelhub import MimeType
-
-from src.evalscripts import burn_severity_visualisation, burned_area_mask
 from src.mapper import BurnedAreaMapper
 from src.vectorizer import create_gpkg
 
@@ -58,16 +55,16 @@ mapper_parameters.add_argument(
     required=True,
 )
 mapper_parameters.add_argument(
-    "-rd",
-    "--result-dir",
-    help="The path to the output diretory.",
+    "-mt",
+    "--map-type",
+    help="Choose from visualisation or mask.",
     type=str,
     required=True,
 )
 mapper_parameters.add_argument(
-    "-m",
-    "--map",
-    help="Choose from visualisation or mask.",
+    "-rd",
+    "--result-dir",
+    help="The path to the output diretory.",
     type=str,
     required=True,
 )
@@ -113,24 +110,6 @@ mapper_parameters.add_argument(
 )
 parser.parse_args()
 
-# BBOX = (148.79697, -33.20518, 150.05036, -32.64876)
-# CRS = 4326
-# FIRE_START = "2023-03-05"
-# FIRE_END = "2023-03-19"
-# CLIENT_ID = os.environ["CLIENT_ID"]
-# CLIENT_SECRET = os.environ["CLIENT_SECRET"]
-# RESULT_DIR = Path(__file__).parent / "results"
-
-
-class Maps:
-    visualisation = burn_severity_visualisation
-    mask = burned_area_mask
-
-
-class ImgFormats:
-    visualisation = MimeType.PNG
-    mask = MimeType.TIFF
-
 
 def main():
     args = parser.parse_args()
@@ -141,16 +120,17 @@ def main():
         args.fire_end,
         args.client_id,
         args.client_secret,
+        args.map_type,
         args.result_dir,
         args.delta_day,
         args.resolution,
         args.maxcc,
     )
-    burned_area_mapper.split_into_utm_zones(tuple([args.bbox_size] * 2))
-    burned_area_mapper.create_request_list(getattr(Maps, args.map), getattr(ImgFormats, args.map))
-    burned_area_mapper.download_requests()
+    bbox_list = burned_area_mapper.split_into_utm_zones(tuple([args.bbox_size] * 2))
+    request_list = burned_area_mapper.create_request_list(bbox_list)
+    _ = burned_area_mapper.download_requests(request_list)
 
-    if args.geopackage and args.map == "mask":
+    if args.geopackage and args.map_type == "mask":
         create_gpkg(args.result_dir)
 
 
