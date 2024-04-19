@@ -57,7 +57,7 @@ jobs:
         run: sentinelhub.config --sh_client_id "$CLIENT_ID" --sh_client_secret "$CLIENT_SECRET"
 
       - name: Create test directory
-        run: mkdir tests/results/visualisation tests/results/mask
+        run: mkdir tests/results; mkdir tests/results/visualisation tests/results/mask
 
       - name: Run tests
         run: pytest
