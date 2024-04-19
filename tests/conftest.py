@@ -31,7 +31,7 @@ def visualisation_fixture():
         "client_id": CONFIG.sh_client_id,
         "client_secret": CONFIG.sh_client_secret,
         "map_type": "visualisation",
-        "result_dir": "./tests/results/visualisation",
+        "result_dir": "./tests/results/assets",
     }
     return BurnedAreaMapper(**input_parameters)
 
