@@ -3,7 +3,9 @@ from sentinelhub import CRS, BBox, DataCollection, MimeType, SentinelHubRequest,
 
 from src.mapper import BurnedAreaMapper
 
-CONFIG = SHConfig("burned-area-mapper")
+CONFIG = SHConfig()
+CONFIG.sh_base_url = "https://sh.dataspace.copernicus.eu"
+CONFIG.sh_token_url = "https://identity.dataspace.copernicus.eu/auth/realms/CDSE/protocol/openid-connect/token"
 EVALSCRIPT = """
     //VERSION=3
     function setup() {
@@ -49,7 +51,7 @@ def mask_fixture():
     return BurnedAreaMapper(**input_parameters)
 
 
-@pytest.fixture(scope="class")
+@pytest.fixture(scope="session")
 def request1_fixture():
     return SentinelHubRequest(
         evalscript=EVALSCRIPT,
@@ -68,7 +70,7 @@ def request1_fixture():
     )
 
 
-@pytest.fixture(scope="class")
+@pytest.fixture(scope="session")
 def request2_fixture():
     return SentinelHubRequest(
         evalscript=EVALSCRIPT,
