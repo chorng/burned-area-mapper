@@ -1,0 +1,65 @@
+{
+    "request": {
+        "headers": {
+            "accept": "image/png",
+            "content-type": "application/json"
+        },
+        "payload": {
+            "evalscript": "\n        //VERSION=3\n        function setup() {\n            return {\n                input: [{bands: [\"B02\", \"B03\", \"B04\", \"B08\", \"B12\", \"SCL\", \"dataMask\"]}],\n                output: { bands: 4 },\n                mosaicking: \"ORBIT\"\n            }\n        }\n\n        function calcNBR(nir, swir) {\n            const denom = nir + swir;\n            const nbrval = denom != 0 ? (nir - swir) / denom : NaN;\n            return nbrval;\n        }\n\n        // usgs dnbr general classification\n        const severity_map = [\n            [0.27, 0xfecc5c],\n            [0.44, 0xfd8d3c],\n            [0.66, 0xe31a1c],\n        ];\n        const severity_visualizer = new ColorMapVisualizer(severity_map);\n\n        function evaluatePixel(samples) {\n            // calculate delta nbr\n            const nbrpre = calcNBR(samples[0].B08, samples[0].B12);\n            const nbrpost = calcNBR(samples[1].B08, samples[1].B12);\n            const dnbr = nbrpre - nbrpost;\n\n            // mask cloud and water\n            const cloud_and_water = [3, 6, 7, 8, 9, 10];\n            const is_cloud_or_water = (\n                cloud_and_water.includes(samples[0].SCL) ||\n                cloud_and_water.includes(samples[1].SCL)\n            );\n\n            // set output display layers\n            const natural_color = [2.5 * samples[0].B04, 2.5 * samples[0].B03, 2.5 * samples[0].B02];\n            let img_vals = dnbr >= 0.27 ? severity_visualizer.process(dnbr) : natural_color\n            img_vals = is_cloud_or_water ? natural_color : img_vals;\n            return img_vals.concat(samples[0].dataMask)\n        }\n\n        function preProcessScenes (collections) {\n            const fireStart = \"2023-03-05\";\n            const fireEnd = \"2023-03-19\";\n            const numScenes = collections.scenes.orbits.length;\n            collections.scenes.orbits = collections.scenes.orbits.sort(function(a, b) {\n                return new Date(a.dateFrom) - new Date(b.dateFrom);\n            })\n            let preFireStartScene = collections.scenes.orbits[0].dateFrom;\n            let postFireEndScene = collections.scenes.orbits[numScenes-1].dateFrom;\n\n            // get the nearest scene before the fire\n            for (let i = 0; i < numScenes; i++) {\n                currentDate = collections.scenes.orbits[i].dateFrom;\n                if (new Date(currentDate) > new Date(preFireStartScene) &&\n                    new Date(currentDate) <= new Date(fireStart)\n                ) {\n                    preFireStartScene = currentDate;\n                }\n            }\n\n            // get the nearest scene after the fire\n            for (let i = numScenes - 1; i > -1; i--) {\n                currentDate = collections.scenes.orbits[i].dateFrom;\n                if (new Date(currentDate) < new Date(postFireEndScene) &&\n                    new Date(currentDate) >= new Date(fireEnd)\n                ) {\n                    postFireEndScene = currentDate;\n                }\n            }\n            const allowedDates = [preFireStartScene, postFireEndScene];\n            collections.scenes.orbits = collections.scenes.orbits.filter(function (orbit) {\n                let orbitDateFrom = orbit.dateFrom;\n                return allowedDates.includes(orbitDateFrom);\n            })\n            return collections\n        }\n    ",
+            "input": {
+                "bounds": {
+                    "bbox": [
+                        660000.0,
+                        6360000.0,
+                        720000.0,
+                        6420000.0
+                    ],
+                    "properties": {
+                        "crs": "http://www.opengis.net/def/crs/EPSG/0/32755"
+                    }
+                },
+                "data": [
+                    {
+                        "dataFilter": {
+                            "maxCloudCoverage": 30,
+                            "timeRange": {
+                                "from": "2023-02-23T00:00:00Z",
+                                "to": "2023-03-29T23:59:59Z"
+                            }
+                        },
+                        "type": "sentinel-2-l2a"
+                    }
+                ]
+            },
+            "output": {
+                "responses": [
+                    {
+                        "format": {
+                            "type": "image/png"
+                        },
+                        "identifier": "default"
+                    }
+                ],
+                "resx": 60,
+                "resy": 60
+            }
+        },
+        "timestamp": "2024-04-19T02:08:00.669423",
+        "url": "https://sh.dataspace.copernicus.eu/api/v1/process"
+    },
+    "response": {
+        "elapsed": 2.913226,
+        "headers": {
+            "access-control-allow-credentials": "true",
+            "access-control-allow-headers": "origin,content-type,accept,accept-crs,authorization,cache-control",
+            "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS, HEAD, PATCH",
+            "access-control-allow-origin": "*",
+            "access-control-max-age": "3600",
+            "content-type": "image/png",
+            "date": "Fri, 19 Apr 2024 00:07:57 GMT",
+            "transfer-encoding": "chunked",
+            "x-processingunits-spent": "15.2587890625"
+        },
+        "status_code": 200
+    }
+}

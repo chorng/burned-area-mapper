@@ -1,0 +1,27 @@
+import json
+from glob import glob
+
+import geopandas as gpd
+import pandas as pd
+import rasterio as rio
+from rasterio.features import shapes
+from shapely.geometry import shape
+
+
+def vectorize(tiff):
+    with rio.open(tiff) as data:
+        array = data.read()
+        transform = data.transform
+        crs = data.crs
+    polygon_value_pairs = list(shapes(array, mask=array, transform=transform))
+    gdf = gpd.GeoDataFrame(
+        {"geometry": [shape(json.loads(json.dumps(pair[0]))) for pair in polygon_value_pairs]}, crs=crs
+    )
+    return gdf.to_crs(4326)
+
+
+def create_gpkg(result_dir):
+    tiff_list = glob(f"{result_dir}/**/*.tiff")
+    gdf_list = [vectorize(tiff) for tiff in tiff_list]
+    concat_gdf = gpd.GeoDataFrame(pd.concat(gdf_list, ignore_index=True), crs=gdf_list[0].crs)
+    concat_gdf.to_file(f"{result_dir}/burned_areas.gpkg", driver="GPKG")

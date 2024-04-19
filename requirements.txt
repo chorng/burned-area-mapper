@@ -1,0 +1,7 @@
+#Libraries that your project use
+dash-leaflet
+geopandas
+pandas
+rasterio
+sentinelhub
+shapely
