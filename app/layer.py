@@ -1,3 +1,9 @@
+"""
+Module to create raster layer and map container of Dash Leaflet.
+"""
+
+from __future__ import annotations
+
 import json
 import os
 from glob import glob

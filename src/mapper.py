@@ -1,3 +1,9 @@
+"""
+Implementation of the Burned area mapper.
+"""
+
+from __future__ import annotations
+
 from datetime import date, timedelta
 from typing import Any
 

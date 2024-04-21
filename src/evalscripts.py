@@ -1,3 +1,8 @@
+"""
+Module to compile evalscript for Sentinel Hub requests.
+"""
+
+
 def burn_severity_visualisation(fire_start: str, fire_end: str) -> str:
     """Compile evalscript for brun severity visualisation.
     :param fire_star: Start date of fire event in the format of %Y-%m-%d.
