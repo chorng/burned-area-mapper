@@ -8,7 +8,11 @@ from rasterio.features import shapes
 from shapely.geometry import shape
 
 
-def vectorize(tiff):
+def vectorize(tiff: str) -> gpd.GeoDataFrame:
+    """Vectorize burn area binary mask.
+    :param tiff: Path to the tiff file.
+    :return: A GeoDataFrame contains polygons of areas where pixel value is 1 in EPSG:4326.
+    """
     with rio.open(tiff) as data:
         array = data.read()
         transform = data.transform
@@ -20,7 +24,10 @@ def vectorize(tiff):
     return gdf.to_crs(4326)
 
 
-def create_gpkg(result_dir):
+def create_gpkg(result_dir: str) -> None:
+    """Create a GeoPackage from tiff files.
+    :param result_dir: Path to the directory where GeoPackage will be saved.
+    """
     tiff_list = glob(f"{result_dir}/**/*.tiff")
     gdf_list = [vectorize(tiff) for tiff in tiff_list]
     concat_gdf = gpd.GeoDataFrame(pd.concat(gdf_list, ignore_index=True), crs=gdf_list[0].crs)

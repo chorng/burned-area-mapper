@@ -1,4 +1,9 @@
-def burn_severity_visualisation(fire_start, fire_end):
+def burn_severity_visualisation(fire_start: str, fire_end: str) -> str:
+    """Compile evalscript for brun severity visualisation.
+    :param fire_star: Start date of fire event in the format of %Y-%m-%d.
+    :param fire_end: End of fire event in the format of %Y-%m-%d.
+    :return: Evalscript of the Sentinel Hub request.
+    """
     return f"""
         //VERSION=3
         function setup() {{
@@ -82,7 +87,12 @@ def burn_severity_visualisation(fire_start, fire_end):
     """
 
 
-def burned_area_mask(fire_start, fire_end):
+def burned_area_mask(fire_start: str, fire_end: str) -> str:
+    """Compile evalscript for burned area mask.
+    :param fire_star: Start date of fire event in the format of %Y-%m-%d.
+    :param fire_end: End of fire event in the format of %Y-%m-%d.
+    :return: Evalscript of the Sentinel Hub request.
+    """
     return f"""
         //VERSION=3
         function setup() {{
