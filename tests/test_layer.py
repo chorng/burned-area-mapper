@@ -13,7 +13,7 @@ def test_get_responses():
 def test_read_image_bounds():
     bbox, crs = read_image_bounds("tests/results/assets/6c83e856af8421020dd3a6fec2514cf4/")
     assert bbox == [660000, 6360000, 720000, 6420000], "Wrong bounding box"
-    assert crs == "32755", "Wrong coordinate reference system"
+    assert crs == 32755, "Wrong coordinate reference system"
 
 
 def test_create_geodataframe():

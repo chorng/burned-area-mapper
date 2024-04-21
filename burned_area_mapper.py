@@ -114,7 +114,7 @@ parser.parse_args()
 def main():
     args = parser.parse_args()
     burned_area_mapper = BurnedAreaMapper(
-        args.bbox,
+        tuple(args.bbox),
         args.crs,
         args.fire_start,
         args.fire_end,
